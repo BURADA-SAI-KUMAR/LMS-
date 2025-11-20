@@ -3,7 +3,8 @@ package com.student.lms.services;
 import com.student.lms.dto.auth.*;
 import com.student.lms.entities.*;
 import com.student.lms.repositories.*;
-import com.student.lms.config.JWTConfigUtil;
+import com.student.lms.security.JWTUtil;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,10 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JWTConfigUtil jwtUtil;
+    private final JWTUtil jwtUtil;
     private final EmailService emailService;
     private final MFAService mfaService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     // Register new user
     public void register(RegisterRequest request) {
@@ -94,4 +96,41 @@ public class AuthService {
 
         return jwtUtil.generateToken(user.getEmail(), null);
     }
+    
+    public void forgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Generate token
+        String token = UUID.randomUUID().toString();
+
+        // Save or update token
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByUser(user)
+                .orElse(PasswordResetToken.builder().user(user).build());
+
+        passwordResetToken.setToken(token);
+        passwordResetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        // Send email
+        emailService.sendPasswordResetEmail(user.getEmail(), token);
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken tokenEntity = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Invalid password reset token"));
+
+        if (tokenEntity.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Password reset token expired");
+        }
+
+        // Update password
+        User user = tokenEntity.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Delete token
+        passwordResetTokenRepository.delete(tokenEntity);
+    }
+
 }

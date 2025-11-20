@@ -22,4 +22,18 @@ public class EmailService {
 
         mailSender.send(message);
     }
+    
+    public void sendPasswordResetEmail(String toEmail, String token) {
+        String subject = "Password Reset Request";
+        String body = "You requested to reset your password. Use the token below:\n\n" + token
+                + "\n\nOr click the link: http://localhost:3000/reset-password?token=" + token;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject(subject);
+        message.setText(body);
+
+        mailSender.send(message);
+    }
+
 }

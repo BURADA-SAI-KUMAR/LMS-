@@ -2,6 +2,8 @@ package com.student.lms.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.student.lms.dto.auth.LoginRequest;
+import com.student.lms.security.JWTUtil;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,7 +21,7 @@ import java.io.IOException;
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
-    private final JWTConfigUtil jwtUtil;
+    private final JWTUtil jwtUtil;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
