@@ -2,6 +2,7 @@ package com.student.lms.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.student.lms.dto.auth.LoginRequest;
+import com.student.lms.security.CustomUserDetails;
 import com.student.lms.security.JWTUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -35,12 +36,19 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
     }
 
+
+    
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException {
-        String username = authResult.getName();
-        String role = authResult.getAuthorities().iterator().next().getAuthority();
-        String token = jwtUtil.generateToken(username, role);
+
+        CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
+        String username = userDetails.getUsername();
+        String roleName = userDetails.getUser().getRole().name(); // get RoleEnum as string
+
+        String token = jwtUtil.generateToken(username, roleName);
+
         response.setHeader("Authorization", "Bearer " + token);
     }
+
 }

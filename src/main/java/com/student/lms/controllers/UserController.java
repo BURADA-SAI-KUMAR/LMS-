@@ -1,10 +1,13 @@
 package com.student.lms.controllers;
 
+import com.student.lms.entities.RoleEnum;
 import com.student.lms.entities.User;
+import com.student.lms.services.RoleService;
 import com.student.lms.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,8 +18,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    
+    private final RoleService roleService;
 
     // ================== CREATE ==================
+    @PreAuthorize("hasAuthority('USER_CREATE')")
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user, 
                                            @RequestParam String role) {
@@ -54,10 +60,11 @@ public class UserController {
     }
 
     // ================== DELETE ==================
+    @PreAuthorize("hasAuthority('USER_CREATE')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("User Delted Successfully");
     }
 
     // ================== STATUS UPDATE ==================
@@ -88,5 +95,26 @@ public class UserController {
     public ResponseEntity<User> verifyMfa(@PathVariable Long id) {
         User user = userService.verifyMfa(id);
         return ResponseEntity.ok(user);
+    }
+    
+    
+
+
+    // ===================== 3. ASSIGN ROLE TO USER =====================
+    @PostMapping("/{id}/roles")
+    public ResponseEntity<User> assignRole(@PathVariable Long id,
+                                           @RequestParam RoleEnum role) {
+
+        User updatedUser = roleService.assignRole(id, role);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    // ===================== 4. REMOVE ROLE FROM USER =====================
+    @DeleteMapping("/{id}/roles/{role}")
+    public ResponseEntity<User> removeRole(@PathVariable Long id,
+                                           @PathVariable RoleEnum role) {
+
+        User updatedUser = roleService.removeRole(id, role);
+        return ResponseEntity.ok(updatedUser);
     }
 }

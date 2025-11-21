@@ -1,6 +1,5 @@
 package com.student.lms.security;
 
-import com.student.lms.entities.Role;
 import com.student.lms.entities.User;
 import com.student.lms.repositories.UserRepository;
 
@@ -24,7 +23,13 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getRole().getName()));
+    	System.out.println(user.getRole());
+        return RolePermissions.getPermissions(user.getRole())
+                .stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.name()))
+                .toList();
+        
+        
     }
 
 

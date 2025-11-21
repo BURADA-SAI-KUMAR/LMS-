@@ -9,5 +9,5 @@ public class RegisterRequest {
     private String firstName;
     private String lastName;
     private String fullName;
-    private Long roleId;  
+    private String role;  
 }

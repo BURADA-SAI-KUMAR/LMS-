@@ -1,6 +1,11 @@
 package com.student.lms.controllers;
 
 import com.student.lms.dto.auth.*;
+import com.student.lms.entities.User;
+import com.student.lms.response.EmailVerifyResponse;
+import com.student.lms.response.LoginResponse;
+import com.student.lms.response.RegisterResponse;
+import com.student.lms.response.UserLoginData;
 import com.student.lms.services.AuthService;
 import com.student.lms.services.MFAService;
 import lombok.RequiredArgsConstructor;
@@ -15,23 +20,54 @@ public class AuthController {
     private final AuthService authService;
     private final MFAService mfaService;
 
+//    @PostMapping("/register")
+//    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+//        authService.register(request);
+//        return ResponseEntity.ok("Registration successful. Check email for verification token.");
+//    }
+    
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        authService.register(request);
-        return ResponseEntity.ok("Registration successful. Check email for verification token.");
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
+
+        User registeredUser = authService.register(request);
+
+        RegisterResponse response = new RegisterResponse(
+                "Registration successful. Check email for verification token.",
+                registeredUser
+        );
+
+        return ResponseEntity.ok(response);
     }
+
 
     @PostMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestBody EmailVerifyRequest request) {
-        authService.verifyEmail(request);
-        return ResponseEntity.ok("Email verified successfully");
+    public ResponseEntity<EmailVerifyResponse> verifyEmail(@RequestBody EmailVerifyRequest request) {
+        
+        User verifiedUser = authService.verifyEmail(request);
+
+        EmailVerifyResponse response = new EmailVerifyResponse(
+                "Email verified successfully",
+                verifiedUser
+        );
+
+        return ResponseEntity.ok(response);
     }
 
+
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        String token = authService.login(request);
-        return ResponseEntity.ok(token);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+
+        UserLoginData loginData = authService.login(request);
+
+        LoginResponse response = new LoginResponse(
+                "Login successful",
+                loginData.getToken(),
+                loginData.getUser()
+        );
+
+        return ResponseEntity.ok(response);
     }
+
 
     @PostMapping("/mfa/setup")
     public ResponseEntity<MFASetupResponse> setupMFA(@RequestParam String email) {

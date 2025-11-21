@@ -32,10 +32,13 @@ public class User {
 
     private String status = "ACTIVE"; // ACTIVE, SUSPENDED, DELETED
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RoleEnum role;
+
+
+    
     private boolean mfaEnabled = false;   // enables MFA requirement
     private boolean mfaVerified = false;  // true when user finishes setup
 

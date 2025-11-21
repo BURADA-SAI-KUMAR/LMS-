@@ -5,6 +5,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.student.lms.entities.RoleEnum;
+
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -27,15 +29,16 @@ public class JWTUtil {
         System.out.println("JWT Secret Loaded. Length = " + secret.length() + " characters");
     }
 
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String roleName) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("role", role)
+                .claim("role", roleName) // role as string
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
     }
+
 
     public boolean validateToken(String token) {
         try {
